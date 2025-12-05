@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  fullName        String
+  email           String    @unique
+  password        String?
+  profilePicture  String?
+  phone           String?
+  role            String    @default("user")
+  provider        String    @default("local")
+  providerId      String?
+  isVerified      Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  resetToken      String?
+  resetExpire     DateTime?
+  lastLogin       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  cart            Cart?
+  orders          Order[]
+  reviews         Review[]
+  wishlist        Wishlist?
+  
+  @@index([email])
+}
+
+model Category {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  image         String
+  displayOrder  Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  books         Book[]
+  
+  @@index([slug])
+}
+
+model Author {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  bio       String?
+  photo     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  books     Book[]
+  
+  @@index([slug])
+}
+
+model Book {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  author          String
+  authorId        String?
+  category        String
+  categoryId      String
+  price           Float
+  discountPrice   Float?
+  images          String[]
+  coverImage      String
+  description     String    @db.Text
+  isbn            String?
+  publisher       String?
+  publishedDate   DateTime?
+  pages           Int?
+  language        String    @default("Urdu")
+  inStock         Boolean   @default(true)
+  stockQuantity   Int       @default(0)
+  rating          Float     @default(0)
+  reviewCount     Int       @default(0)
+  tags            String[]
+  status          String    @default("active")
+  featured        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  categoryRel     Category  @relation(fields: [categoryId], references: [id])
+  authorRel       Author?   @relation(fields: [authorId], references: [id])
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+  
+  @@index([slug])
+  @@index([categoryId])
+  @@index([title])
+}
+
+model Cart {
+  id          String     @id @default(cuid())
+  userId      String     @unique
+  totalAmount Float      @default(0)
+  itemCount   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  bookId    String
+  quantity  Int      @default(1)
+  price     Float
+  subtotal  Float
+  addedAt   DateTime @default(now())
+  
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id])
+  
+  @@unique([cartId, bookId])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  orderNumber     String      @unique
+  subtotal        Float
+  shippingCost    Float       @default(200)
+  totalAmount     Float
+  paymentMethod   String
+  paymentStatus   String      @default("pending")
+  orderStatus     String      @default("pending")
+  shippingAddress Json
+  customerNote    String?
+  trackingNumber  String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  paidAt          DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  
+  user            User        @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  payment         Payment?
+  
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([orderStatus])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  bookId    String
+  title     String
+  image     String
+  author    String
+  quantity  Int
+  price     Float
+  subtotal  Float
+  
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  book      Book   @relation(fields: [bookId], references: [id])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  amount        Float
+  method        String
+  transactionId String?  @unique
+  status        String   @default("pending")
+  gatewayData   Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  completedAt   DateTime?
+  
+  order         Order    @relation(fields: [orderId], references: [id])
+  
+  @@index([transactionId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  bookId     String
+  userId     String
+  rating     Int
+  comment    String   @db.Text
+  isVerified Boolean  @default(false)
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([bookId, userId])
+  @@index([bookId])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  bookIds   String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Settings {
+  id          String   @id @default(cuid())
+  siteName    String   @default("Book Valley")
+  tagline     String   @default("Turning Pages, Opening Minds")
+  logo        String   @default("/weblogo.png")
+  contact     Json
+  social      Json
+  about       Json
+  business    Json
+  updatedAt   DateTime @updatedAt
+}
