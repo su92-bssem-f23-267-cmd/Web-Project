@@ -15,8 +15,8 @@ function Aboutus() {
           <div className='flex gap-8 text-lg font-semibold'>
             <Link href='/'>Home</Link>
             <Link href='/About'>About</Link>
-            <a href='#'>Products</a>
-            <a href='#'>Features</a>
+            <Link href='#'>Products</Link>
+            <Link href='#'>Features</Link>
           </div>
         </nav>
       </div>

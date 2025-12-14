@@ -28,11 +28,10 @@ function LoginPage() {
         localStorage.setItem('token', data.data.token)
         localStorage.setItem('user', JSON.stringify(data.data.user))
         
+        // Admin users go to admin panel, regular users go to home
         if (data.data.user.role === 'admin') {
-          alert('Admin Login Successful! 🎉')
-          router.push('/')
+          router.push('/admin')
         } else {
-          alert('Login Successful! 🎉')
           router.push('/')
         }
       } else {

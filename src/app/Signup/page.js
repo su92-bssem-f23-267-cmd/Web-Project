@@ -33,7 +33,6 @@ function Signup() {
       const data = await response.json()
 
       if (data.success) {
-        alert('Registration Successful! 🎉 Please login.')
         router.push('/LoginPage')
       } else {
         setError(data.error || 'Registration failed')

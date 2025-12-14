@@ -1,5 +1,6 @@
+'use client'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Section1 from './componenets/Sectin1'
 import Novelsection from './componenets/Novelsection'
 import Storysection from './componenets/Storysection'
@@ -9,24 +10,33 @@ import Signup from './Signup/page'
 import Aboutus from './Aboutus/page'
 
 function Page({ image, CategoryName, Details, pagelink }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      setUser(JSON.parse(userData))
+    }
+  }, [])
+
   return (
     <div className='min-h-screen bg-gradient-to-b from-indigo-50 to-blue-100 flex flex-col'>
       
       {/* 🔹 Fixed Navbar */}
       <div className='bg-gradient-to-r fixed top-0 left-0 w-full z-50 from-indigo-700 to-purple-700 shadow-md'>
-        <nav className='flex justify-between items-center px-6 md:px-12 py-4 text-white relative'>
+        <nav className='flex justify-between items-center px-3 sm:px-6 md:px-12 py-3 md:py-4 text-white relative'>
           
           {/* Logo (Left) */}
-          <div className='flex items-center space-x-3'>
+          <div className='flex items-center space-x-2 md:space-x-3'>
             <img
               src='/weblogo.png'
-              className='h-12 w-16 md:h-16 md:w-20 object-contain'
+              className='h-10 w-14 md:h-16 md:w-20 object-contain'
               alt='Logo'
             />
-            
           </div>
 
-          {/* 🔸 Center Menu with Dropdown */}
+          {/* 🔸 Center Menu with Dropdown (Desktop) */}
           <div className='hidden md:flex gap-8 text-lg font-semibold items-center relative'>
             <Link href='/'>Home</Link>
 
@@ -64,22 +74,125 @@ function Page({ image, CategoryName, Details, pagelink }) {
             <Link href='/Aboutus' className='hover:text-yellow-300 transition-all duration-200'>About</Link>
           </div>
 
-          {/* 🔸 Login Section (Right) */}
-          <div className='flex flex-col items-center text-center'>
-            <Link
-              href='/LoginPage'
-              className='bg-amber-400 text-purple-900 px-5 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300'
-            >
-              Login
-            </Link>
-            <p className='text-[10px] md:text-xs text-gray-200 mt-1'>
-              Don’t have an account?{' '}
-              <Link href='/Signup' className='text-yellow-300 font-medium hover:underline'>
-                Create New One
-              </Link>
-            </p>
+          {/* 🔸 Login Section (Desktop - Right) */}
+          <div className='hidden md:flex flex-col items-center text-center gap-2'>
+            {user ? (
+              <div className='flex items-center gap-3'>
+                <div className='text-right'>
+                  <p className='text-sm font-semibold text-white'>{user.fullName}</p>
+                  <p className='text-xs text-gray-200'>{user.role === 'admin' ? '👑 Admin' : '👤 User'}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('user')
+                    setUser(null)
+                    window.location.reload()
+                  }}
+                  className='bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all duration-300'
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href='/LoginPage'
+                  className='bg-amber-400 text-purple-900 px-5 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300'
+                >
+                  Login
+                </Link>
+                <p className='text-xs text-gray-200 mt-1'>
+                  Don't have an account?{' '}
+                  <Link href='/Signup' className='text-yellow-300 font-medium hover:underline'>
+                    Create One
+                  </Link>
+                </p>
+              </>
+            )}
           </div>
+
+          {/* 🔸 Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className='md:hidden flex flex-col gap-1.5 p-2'
+            aria-label='Toggle menu'
+          >
+            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          </button>
         </nav>
+
+        {/* 🔸 Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className='md:hidden bg-indigo-800 border-t border-indigo-600 py-4 px-4'>
+            <div className='flex flex-col space-y-4'>
+              <Link href='/' className='text-white hover:text-yellow-300 transition-all duration-200 text-base font-semibold'>
+                Home
+              </Link>
+              <Link href='/NovelBooks' className='text-white hover:text-yellow-300 transition-all duration-200 text-base pl-4 border-l-2 border-yellow-300'>
+                Novel Books
+              </Link>
+              <Link href='/IslamicBooks' className='text-white hover:text-yellow-300 transition-all duration-200 text-base pl-4 border-l-2 border-yellow-300'>
+                Islamic Books
+              </Link>
+              <Link href='/StoryBooks' className='text-white hover:text-yellow-300 transition-all duration-200 text-base pl-4 border-l-2 border-yellow-300'>
+                Story Books
+              </Link>
+              <Link href='/MedicalBooks' className='text-white hover:text-yellow-300 transition-all duration-200 text-base pl-4 border-l-2 border-yellow-300'>
+                Medical Books
+              </Link>
+              <Link href='/ComputerBooks' className='text-white hover:text-yellow-300 transition-all duration-200 text-base pl-4 border-l-2 border-yellow-300'>
+                Computer Books
+              </Link>
+              <Link href='/EducationalBooks' className='text-white hover:text-yellow-300 transition-all duration-200 text-base pl-4 border-l-2 border-yellow-300'>
+                Educational Books
+              </Link>
+              <Link href='/Signup' className='text-white hover:text-yellow-300 transition-all duration-200 text-base font-semibold'>
+                Features
+              </Link>
+              <Link href='/Aboutus' className='text-white hover:text-yellow-300 transition-all duration-200 text-base font-semibold'>
+                About
+              </Link>
+              {user ? (
+                <>
+                  <div className='bg-indigo-700 p-3 rounded-lg text-white'>
+                    <p className='font-semibold text-sm'>{user.fullName}</p>
+                    <p className='text-xs text-gray-300'>{user.role === 'admin' ? '👑 Admin Account' : '👤 User Account'}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token')
+                      localStorage.removeItem('user')
+                      setUser(null)
+                      setMobileMenuOpen(false)
+                      window.location.reload()
+                    }}
+                    className='bg-red-500 text-white px-4 py-2 rounded-lg font-semibold text-center w-full hover:bg-red-600 transition-all duration-300'
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href='/LoginPage'
+                    className='bg-amber-400 text-purple-900 px-4 py-2 rounded-lg font-semibold text-center w-full hover:shadow-lg transition-all duration-300'
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href='/Signup'
+                    className='bg-transparent border-2 border-amber-400 text-amber-400 px-4 py-2 rounded-lg font-semibold text-center w-full hover:bg-amber-400 hover:text-purple-900 transition-all duration-300'
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 🔹 Hero Section */}
