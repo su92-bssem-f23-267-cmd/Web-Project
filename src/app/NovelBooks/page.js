@@ -1,8 +1,9 @@
 'use client'
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from 'react'
 import Novelsection from '../componenets/Novelsection'
 import Link from 'next/link'
-
 function Page() {
   const [searchTerm, setSearchTerm] = useState('')
   const [books, setBooks] = useState([])
