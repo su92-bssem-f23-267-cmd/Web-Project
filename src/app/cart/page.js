@@ -29,7 +29,8 @@ function CartPage() {
       })
       const data = await response.json()
       if (data.success) {
-        setCartItems(data.data || [])
+        // API returns { data: { items: [...] , itemCount, totalAmount } }
+        setCartItems(data.data.items || [])
       }
     } catch (err) {
       setError('Failed to load cart')
